@@ -1,0 +1,231 @@
+import pandas as pd
+import numpy as np
+df = pd.read_csv('Breast_cancer_data.csv')
+df
+
+#Data Description The Data description is as follows:
+
+diagnosis: The diagnosis of breast tissues (1 = malignant, 0 = benign) where malignant denotes that the disease is harmful mean_radius: mean of distances from center to points on the perimeter mean_texture: standard deviation of gray-scale values mean_perimeter: mean size of the core tumor mean_area: mean area of the core tumor mean_smoothness: mean of local variation in radius lengths
+
+## checking null and duplicates
+df.isnull().sum()
+
+#remove duplicates
+df.drop_duplicates(inplace=True)
+df
+
+#correlation
+
+import matplotlib.pyplot as plt
+import seaborn as sns
+plt.figure(figsize=(12,6))
+sns.heatmap(df.corr(), annot=True, cmap='BrBG')
+plt.show()
+
+sns.pairplot(df)
+plt.show()
+
+#After visualizing this, we can clearly say that
+
+mean_perimeter and mean_radius is complete correlated(100%) mean_area and mean_radius(99%) mean_area and mean_perimeter(99%) So, if we drop mean_perimeter column because it is highly correlated with mean_radius and we will also drop mean_area
+
+df1=df.drop(columns=['mean_perimeter','mean_area'], axis=1)
+df1
+
+#time
+df.hist(bins=30, figsize=(18,12))
+plt.show()
+
+#SPLITTING DATASET INTO TRAINING AND TESTING
+
+X=df1.iloc[:,:-1].values
+Y=df1.iloc[:,-1].values
+from sklearn.model_selection import train_test_split
+X_train, X_test, y_train, y_test = train_test_split(X, Y, train_size=0.8, random_state=0)
+Apply feature scaling
+
+from sklearn.preprocessing import StandardScaler
+sc = StandardScaler()
+X_train=sc.fit_transform(X_train)
+X_test=sc.transform(X_test)
+X_train.shape
+(455, 3)
+X_test.shape
+(114, 3)
+
+
+#Training the model using LogisticRegression
+from sklearn.linear_model import LogisticRegression
+classifier=LogisticRegression()
+classifier.fit(X_train, y_train)
+LogisticRegression()
+y_pred=classifier.predict(X_test)
+
+
+from sklearn.metrics import confusion_matrix, accuracy_score
+cm = confusion_matrix(y_test, y_pred)
+print(cm)
+print(accuracy_score(y_test, y_pred))
+[[42  5]
+ [ 5 62]]
+0.9122807017543859
+
+
+#Training the model using KNeighborsClassifie
+
+from sklearn.neighbors import KNeighborsClassifier
+knn=KNeighborsClassifier(n_neighbors=5)
+knn.fit(X_train, y_train)
+KNeighborsClassifier()
+y_pred=knn.predict(X_test)
+from sklearn.metrics import confusion_matrix, accuracy_score
+cm=confusion_matrix(y_test, y_pred)
+print(cm)
+print(accuracy_score(y_test, y_pred))
+[[38  9]
+ [ 4 63]]
+0.8859649122807017
+
+#Training the model using SVM
+
+from sklearn.svm import SVC
+svm=SVC(kernel='linear')
+svm.fit(X_train, y_train)
+SVC(kernel='linear')
+y_pred=svm.predict(X_test)
+from sklearn.metrics import confusion_matrix, accuracy_score
+cm=confusion_matrix(y_test, y_pred)
+print(cm)
+print(accuracy_score(y_test, y_pred))
+[[42  5]
+ [ 5 62]]
+0.9122807017543859
+
+
+#Training the model using Kernal SVM
+from sklearn.svm import SVC
+kernel_svm = SVC(kernel = 'rbf')
+kernel_svm.fit(X_train, y_train)
+SVC()
+y_pred = kernel_svm.predict(X_test)
+
+from sklearn.metrics import confusion_matrix, accuracy_score
+cm = confusion_matrix(y_test, y_pred)
+print(cm)
+print(accuracy_score(y_test, y_pred))
+[[41  6]
+ [ 6 61]]
+0.8947368421052632
+
+
+#Training the model using Naive Bayes
+from sklearn.naive_bayes import GaussianNB
+gnb = GaussianNB()
+gnb.fit(X_train, y_train)
+GaussianNB()
+y_pred = gnb.predict(X_test)
+
+from sklearn.metrics import confusion_matrix, accuracy_score
+cm = confusion_matrix(y_test, y_pred)
+print(cm)
+print(accuracy_score(y_test, y_pred))
+[[39  8]
+ [ 2 65]]
+0.9122807017543859
+
+
+#Training the model using Decision Tree Classifier
+from sklearn.tree import DecisionTreeClassifier
+dtc=DecisionTreeClassifier()
+dtc.fit(X_train, y_train)
+DecisionTreeClassifier()
+y_pred=dtc.predict(X_test)
+
+from sklearn.metrics import confusion_matrix, accuracy_score
+cm=confusion_matrix(y_test, y_pred)
+print(cm)
+print(accuracy_score(y_test, y_pred))
+[[43  4]
+ [ 7 60]]
+0.9035087719298246
+
+
+#Training the model using Random Forest Classifier
+from sklearn.ensemble import RandomForestClassifier
+rfc = RandomForestClassifier(n_estimators = 10, criterion = 'entropy')
+rfc.fit(X_train, y_train)
+RandomForestClassifier(criterion='entropy', n_estimators=10)
+y_pred = rfc.predict(X_test)
+
+from sklearn.metrics import confusion_matrix, accuracy_score
+cm = confusion_matrix(y_test, y_pred)
+print(cm)
+print(accuracy_score(y_test, y_pred))
+[[42  5]
+ [ 5 62]]
+0.9122807017543859
+
+
+#Training the model using ANN(Artificial Neural Network)
+import tensorflow as tf
+import keras
+from keras.layers import Dense, Dropout
+from keras.models import Sequential
+pip install --upgrade pip
+
+model = Sequential()
+model.add(Dense(units = 3, activation = 'relu'))
+model.add(Dropout(0.25))
+model.add(Dense(units = 3, activation = 'relu'))
+model.add(Dropout(0.25))
+model.add(Dense(units = 1, activation = 'sigmoid'))
+
+## compile the model
+model.compile(optimizer = 'adam', loss = 'binary_crossentropy', metrics = ['accuracy'])
+from keras.callbacks import EarlyStopping
+early_stop = EarlyStopping(monitor='val_loss', patience=5, verbose=1)
+deep_history = model.fit(X_train, 
+                              y_train, 
+                              epochs=100,
+                              batch_size = 32,
+                              validation_data = (X_test, y_test),
+                              callbacks=[early_stop]
+                            )
+
+
+def plot_loss(history):
+    historydf = pd.DataFrame(history.history, index=history.epoch)
+    plt.figure(figsize=(8, 6))
+    historydf.plot(ylim=(0, historydf.values.max()))
+    plt.title('Loss: %.3f' % history.history['loss'][-1])
+plot_loss(deep_history)
+
+
+y_pred = model.predict(X_test)
+
+y_pred = (y_pred>0.5)
+from sklearn.metrics import confusion_matrix, accuracy_score
+cm = confusion_matrix(y_test, y_pred)
+print(cm)
+print(accuracy_score(y_test, y_pred))
+[[42  5]
+ [ 5 62]]
+0.9122807017543859
+
+df = pd.DataFrame({
+    'Model Name': ['Logistic Regression', 'K Neighbors Classifier', 'Linear SVM', 'Kernal SVM', 'Naive Bayes', 'Decision Tree Classifier', 'Random Forest Classifier', 'ANN'],
+    'Accuracy Score':  [91.22, 88.59, 91.22, 89.47, 91.22, 90.35, 89.47, 93.85]
+})
+
+df = df.sort_values(by = ['Accuracy Score'], ascending = False)
+df
+Model Name	Accuracy Score
+7	ANN	93.85
+0	Logistic Regression	91.22
+2	Linear SVM	91.22
+4	Naive Bayes	91.22
+5	Decision Tree Classifier	90.35
+3	Kernal SVM	89.47
+6	Random Forest Classifier	89.47
+1	K Neighbors Classifier	88.59
+Our winning model is ANN with Accuracy 93.85%
